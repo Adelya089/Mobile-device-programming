@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-                                                                                                                                colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const MyHomePage(title: 'Валиуллова Аделя ПИбд-31'),
     );
@@ -23,8 +23,8 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-      
-        
+
+
   final String title;
 
   @override
@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
                         child: Column(
-                                                                                                                                            mainAxisAlignment: .center,
+                         mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('You have pushed the button this many times:'),
             Text(
