@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'artists_albums.dart';
+
 void main() {
   runApp(const MyApp());
+  runLab2();
 }
 
 class MyApp extends StatelessWidget {

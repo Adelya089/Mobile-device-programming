@@ -18,9 +18,9 @@ extension GenreExtension on Genre {
 }
 
 class Album {
-  String name;
-  int year;
-  Genre genre;
+  final String name;
+  final int year;
+  final Genre genre;
 
   Album(this.name, this.year, this.genre);
 
@@ -30,8 +30,8 @@ class Album {
 }
 
 class Artist {
-  String name;
-  List<Album> albums;
+  final String name;
+  final List<Album> albums;
 
   Artist(this.name, this.albums);
 
@@ -54,19 +54,19 @@ Future<void> loadAlbums() async {
 
 
 Future<void> runLab2() async {
-  Album album1 = Album(
+  final Album album1 = Album(
     'Альбом 1',
     2020,
     Genre.pop,
   );
 
-  Album album2 = Album(
+  final Album album2 = Album(
     'Альбом 2',
     2022,
     Genre.rock,
   );
 
-  Artist artist = Artist(
+  final Artist artist = Artist(
     'Исполнитель',
     [album1, album2],
   );
