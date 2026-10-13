@@ -1,8 +1,4 @@
-enum Genre {
-  pop,
-  rock,
-  rap,
-}
+enum Genre { pop, rock, rap }
 
 extension GenreExtension on Genre {
   String get title {
@@ -52,24 +48,12 @@ Future<void> loadAlbums() async {
   print('Загрузка завершена');
 }
 
-
 Future<void> runLab2() async {
-  final Album album1 = Album(
-    'Альбом 1',
-    2020,
-    Genre.pop,
-  );
+  final Album album1 = Album('Альбом 1', 2020, Genre.pop);
 
-  final Album album2 = Album(
-    'Альбом 2',
-    2022,
-    Genre.rock,
-  );
+  final Album album2 = Album('Альбом 2', 2022, Genre.rock);
 
-  final Artist artist = Artist(
-    'Исполнитель',
-    [album1, album2],
-  );
+  final Artist artist = Artist('Исполнитель', [album1, album2]);
 
   await loadAlbums();
 
