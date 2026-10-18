@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../data/repositories/artist_repository.dart';
 import '../../models/card.dart';
 import '../details_page/details_page.dart';
 import 'card.dart';
@@ -15,23 +16,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<CardData> data = [
-    CardData(
-      'Земфира',
-      album: 'Прости меня моя любовь',
-      imageUrl: 'https://upload.wikimedia.org/wikipedia/ru/9/9e/%D0%97%D0%B5%D0%BC%D1%84%D0%B8%D1%80%D0%B0_%D0%9F%D0%9C%D0%9C%D0%9B.jpg',
-    ),
-    CardData(
-      'Григорий Лепс',
-      album: 'Зеркала',
-      imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/Grigory_Leps_LIVE_2025.jpg/960px-Grigory_Leps_LIVE_2025.jpg',
-    ),
-    CardData(
-      'Кино',
-      album: 'Группа крови',
-      imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Split_Cathedral_Bell_Tower_From_The_Vestibule_-_Split.jpg/1920px-Split_Cathedral_Bell_Tower_From_The_Vestibule_-_Split.jpg?utm_source=ru.wikipedia.org&utm_campaign=parser&utm_content=thumbnail',
-    ),
-  ];
+  final ArtistRepository repo = ArtistRepository();
+
+  final TextEditingController searchController = TextEditingController();
+
+  late Future<List<CardData>?> data;
+
+  @override
+  void initState() {
+    super.initState();
+    data = repo.loadData();
+  }
 
   void _showSnackBar(BuildContext context, String artist, bool isLiked) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -49,7 +44,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void _navToDetails(BuildContext context, CardData data) {
     Navigator.push(
       context,
-      CupertinoPageRoute(builder: (context) => DetailsPage(data)),
+      CupertinoPageRoute(
+        builder: (context) => DetailsPage(data),
+      ),
     );
   }
 
@@ -60,20 +57,59 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: data.map((item) {
-              return AlbumCard.fromData(
-                item,
-                onLike: (String artist, bool isLiked) =>
-                    _showSnackBar(context, artist, isLiked),
-                onTap: () => _navToDetails(context, item),
-              );
-            }).toList(),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              controller: searchController,
+              decoration: const InputDecoration(
+                hintText: 'Поиск исполнителя',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (search) {
+                setState(() {
+                  data = repo.loadData(q: search);
+                });
+              },
+            ),
           ),
-        ),
+          Expanded(
+            child: FutureBuilder<List<CardData>?>(
+              future: data,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                return SingleChildScrollView(
+                  child: Column(
+                    children: snapshot.data!
+                        .map(
+                          (item) => AlbumCard.fromData(
+                        item,
+                        onLike: (String artist, bool isLiked) =>
+                            _showSnackBar(
+                              context,
+                              artist,
+                              isLiked,
+                            ),
+                        onTap: () => _navToDetails(
+                          context,
+                          item,
+                        ),
+                      ),
+                    )
+                        .toList(),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
