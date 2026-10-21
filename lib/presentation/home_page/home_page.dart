@@ -1,7 +1,9 @@
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/repositories/artist_repository.dart';
+import '../../bloc/home_bloc.dart';
 import '../../models/card.dart';
 import '../details_page/details_page.dart';
 import 'card.dart';
@@ -16,16 +18,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final ArtistRepository repo = ArtistRepository();
-
   final TextEditingController searchController = TextEditingController();
-
-  late Future<List<CardData>?> data;
 
   @override
   void initState() {
     super.initState();
-    data = repo.loadData();
+    context.read<HomeBloc>().add(HomeLoadRequested());
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    final bloc = context.read<HomeBloc>();
+
+    final finished = bloc.stream.firstWhere(
+          (state) => !state.isLoading && !state.isRefreshing,
+    );
+
+    bloc.add(HomeRefreshRequested());
+
+    await finished;
   }
 
   void _showSnackBar(BuildContext context, String artist, bool isLiked) {
@@ -69,25 +85,38 @@ class _MyHomePageState extends State<MyHomePage> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (search) {
-                setState(() {
-                  data = repo.loadData(q: search);
-                });
+                context.read<HomeBloc>().add(
+                  HomeSearchChanged(search),
+                );
               },
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<CardData>?>(
-              future: data,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
+            child: BlocBuilder<HomeBloc, HomeState>(
+              builder: (context, state) {
+                if (state.isLoading) {
                   return const Center(
                     child: CircularProgressIndicator(),
                   );
                 }
 
-                return SingleChildScrollView(
-                  child: Column(
-                    children: snapshot.data!
+                if (state.error != null) {
+                  return Center(
+                    child: Text(state.error!),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: state.data.isEmpty
+                        ? [
+                      const Center(
+                        child: Text('Исполнители не найдены'),
+                      ),
+                    ]
+                        : state.data
                         .map(
                           (item) => AlbumCard.fromData(
                         item,
