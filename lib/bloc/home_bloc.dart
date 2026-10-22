@@ -18,9 +18,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   HomeBloc(this.repository) : super(const HomeState()) {
     on<HomeLoadRequested>((event, emit) async {
-      emit(HomeState(
-        data: state.data,
+      emit(state.copyWith(
         isLoading: true,
+        isRefreshing: false,
       ));
 
       await _loadData(emit);
@@ -37,8 +37,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     });
 
     on<HomeRefreshRequested>((event, emit) async {
-      emit(HomeState(
-        data: state.data,
+      emit(state.copyWith(
         isRefreshing: true,
       ));
 
@@ -54,10 +53,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         throw Exception('Ошибка загрузки данных');
       }
 
-      emit(HomeState(data: data));
+      emit(state.copyWith(
+        data: data,
+        isLoading: false,
+        isRefreshing: false,
+      ));
     } catch (e) {
-      emit(HomeState(
-        data: state.data,
+      emit(state.copyWith(
+        isLoading: false,
+        isRefreshing: false,
         error: 'Не удалось загрузить данные',
       ));
     }
