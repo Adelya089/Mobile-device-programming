@@ -1,10 +1,14 @@
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../bloc/like_bloc/like_event.dart';
+import '../../bloc/like_bloc/like_bloc.dart';
 import '../../models/card.dart';
 
 typedef OnLikeCallback = void Function(String artist, bool isLiked)?;
 
-class AlbumCard extends StatefulWidget {
+class AlbumCard extends StatelessWidget {
   final String artist;
   final String album;
   final String? imageUrl;
@@ -12,43 +16,42 @@ class AlbumCard extends StatefulWidget {
   final VoidCallback? onTap;
 
   const AlbumCard(
-    this.artist, {
-    super.key,
-    required this.album,
-    this.imageUrl,
-    this.onLike,
-    this.onTap,
-  });
+      this.artist, {
+        super.key,
+        required this.album,
+        this.imageUrl,
+        this.onLike,
+        this.onTap,
+      });
 
   factory AlbumCard.fromData(
-    CardData data, {
-    OnLikeCallback onLike,
-    VoidCallback? onTap,
-  }) => AlbumCard(
-    data.artist,
-    album: data.album,
-    imageUrl: data.imageUrl,
-    onLike: onLike,
-    onTap: onTap,
-  );
-
-  @override
-  State<AlbumCard> createState() => _AlbumCardState();
-}
-
-class _AlbumCardState extends State<AlbumCard> {
-  bool isLiked = false;
+      CardData data, {
+        OnLikeCallback onLike,
+        VoidCallback? onTap,
+      }) =>
+      AlbumCard(
+        data.artist,
+        album: data.album,
+        imageUrl: data.imageUrl,
+        onLike: onLike,
+        onTap: onTap,
+      );
 
   @override
   Widget build(BuildContext context) {
+    final id = '$artist|$album';
+
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: onTap,
       child: Container(
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey, width: 2),
+          border: Border.all(
+            color: Colors.grey,
+            width: 2,
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,7 +62,7 @@ class _AlbumCardState extends State<AlbumCard> {
                 height: 140,
                 width: 100,
                 child: Image.network(
-                  widget.imageUrl ?? '',
+                  imageUrl ?? '',
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) {
                     return const Placeholder();
@@ -74,25 +77,40 @@ class _AlbumCardState extends State<AlbumCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.artist,
-                      style: Theme.of(context).textTheme.headlineLarge,
+                      artist,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineLarge,
                     ),
                     Text(
-                      widget.album,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      album,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge,
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          isLiked = !isLiked;
-                        });
+                    BlocBuilder<LikeBloc, LikeState>(
+                      builder: (context, state) {
+                        final isLiked =
+                        state.likedIds.contains(id);
 
-                        widget.onLike?.call(widget.artist, isLiked);
+                        return GestureDetector(
+                          onTap: () {
+                            context.read<LikeBloc>().add(
+                              ChangeLikeEvent(id),
+                            );
+
+                            onLike?.call(artist, !isLiked);
+                          },
+                          child: Icon(
+                            isLiked
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: isLiked
+                                ? Colors.red
+                                : Colors.grey,
+                          ),
+                        );
                       },
-                      child: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.grey,
-                      ),
                     ),
                   ],
                 ),

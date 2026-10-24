@@ -1,5 +1,7 @@
+
 import 'package:flutter/material.dart';
 
+import '../../components/locale/l10n/app_locale.dart';
 import '../../models/card.dart';
 
 class DetailsPage extends StatelessWidget {
@@ -9,6 +11,8 @@ class DetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = AppLocale.of(context)!;
+
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -19,15 +23,24 @@ class DetailsPage extends StatelessWidget {
             Image.network(
               data.imageUrl ?? '',
               errorBuilder: (_, __, ___) {
-                return const Placeholder(fallbackHeight: 200);
+                return const Placeholder(
+                  fallbackHeight: 200,
+                );
               },
             ),
             const SizedBox(height: 16),
-            Text(data.artist, style: Theme.of(context).textTheme.headlineLarge),
+            Text(
+              data.artist,
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineLarge,
+            ),
             const SizedBox(height: 4),
             Text(
-              'Альбом: ${data.album}',
-              style: Theme.of(context).textTheme.bodyLarge,
+              '${locale.album}: ${data.album}',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge,
             ),
           ],
         ),

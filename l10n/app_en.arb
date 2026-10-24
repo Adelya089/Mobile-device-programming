@@ -1,0 +1,10 @@
+
+{
+  "@@locale": "en",
+  "searchHint": "Search for an artist",
+  "notFound": "No artists found",
+  "liked": "liked!",
+  "unliked": "like removed",
+  "album": "Album",
+  "language": "Language"
+}

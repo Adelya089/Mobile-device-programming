@@ -3,7 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../bloc/locale_bloc/locale_bloc.dart';
 import '../../bloc/home_bloc.dart';
+import '../../components/locale/l10n/app_locale.dart';
 import '../../models/card.dart';
 import '../details_page/details_page.dart';
 import 'card.dart';
@@ -18,7 +20,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController searchController = TextEditingController();
+  final TextEditingController searchController =
+  TextEditingController();
 
   @override
   void initState() {
@@ -44,20 +47,29 @@ class _MyHomePageState extends State<MyHomePage> {
     await finished;
   }
 
-  void _showSnackBar(BuildContext context, String artist, bool isLiked) {
+  void _showSnackBar(
+      BuildContext context,
+      String artist,
+      bool isLiked,
+      ) {
+    final locale = AppLocale.of(context)!;
+
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          isLiked ? '$artist: лайк поставлен!' : '$artist: лайк убран',
+          '$artist: ${isLiked ? locale.liked : locale.unliked}',
         ),
         duration: const Duration(seconds: 1),
       ),
     );
   }
 
-  void _navToDetails(BuildContext context, CardData data) {
+  void _navToDetails(
+      BuildContext context,
+      CardData data,
+      ) {
     Navigator.push(
       context,
       CupertinoPageRoute(
@@ -68,10 +80,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = AppLocale.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor:
+        Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            tooltip: locale.language,
+            icon: const Icon(Icons.language),
+            onPressed: () {
+              context.read<LocaleBloc>().add(
+                const ChangeLocaleEvent(),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -79,10 +105,10 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.all(12),
             child: TextField(
               controller: searchController,
-              decoration: const InputDecoration(
-                hintText: 'Поиск исполнителя',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: locale.searchHint,
+                prefixIcon: const Icon(Icons.search),
+                border: const OutlineInputBorder(),
               ),
               onChanged: (search) {
                 context.read<HomeBloc>().add(
@@ -109,18 +135,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 return RefreshIndicator(
                   onRefresh: _refresh,
                   child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    physics:
+                    const AlwaysScrollableScrollPhysics(),
                     children: state.data.isEmpty
                         ? [
-                      const Center(
-                        child: Text('Исполнители не найдены'),
+                      Center(
+                        child: Text(locale.notFound),
                       ),
                     ]
                         : state.data
                         .map(
                           (item) => AlbumCard.fromData(
                         item,
-                        onLike: (String artist, bool isLiked) =>
+                        onLike: (
+                            String artist,
+                            bool isLiked,
+                            ) =>
                             _showSnackBar(
                               context,
                               artist,
